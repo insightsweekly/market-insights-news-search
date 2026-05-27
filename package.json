@@ -1,0 +1,25 @@
+{
+  "name": "market-insight-weekly",
+  "version": "2.0.0",
+  "description": "AI-powered market intelligence briefing for Hong Kong, Greater China & Asia Pacific. Fetches news via NewsAPI & WorldNewsAPI, summarized with Gemini AI.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "market-intelligence",
+    "news-aggregation",
+    "ai-summarization",
+    "Hong-Kong",
+    "Greater-China",
+    "Asia-Pacific"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}
