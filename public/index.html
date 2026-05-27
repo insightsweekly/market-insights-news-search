@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Market Insight Weekly</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --gold:#B8860B;--gold-dim:#9B7512;--gold-mid:#D4A017;--gold-faint:rgba(184,134,11,0.1);
+    --bg:#FAFAF7;--surface:#FFFFFF;--surface2:#F5F2EA;
+    --border:rgba(184,134,11,0.25);--border2:rgba(184,134,11,0.12);
+    --text:#1A1A1A;--text-muted:#555048;--text-dim:#999080;
+  }
+  body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden}
+  .grain{display:none}
+  .app{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:0 24px 80px}
+  header{padding:48px 0 32px;border-bottom:2px solid var(--gold);margin-bottom:40px;background:linear-gradient(135deg,#FFFEF9 0%,#FDF8EC 100%)}
+  .header-eyebrow{font-size:11px;letter-spacing:.18em;color:var(--gold-dim);text-transform:uppercase;font-weight:500;margin-bottom:12px}
+  .header-title{font-family:'Cormorant Garamond',serif;font-size:clamp(32px,5vw,52px);font-weight:600;line-height:1.1;color:#1A1A1A}
+  .header-title span{color:var(--gold)}
+  .header-sub{font-size:13px;color:var(--text-muted);margin-top:10px;font-weight:300}
+  .week-nav{display:flex;align-items:center;gap:12px;margin-bottom:36px;flex-wrap:wrap}
+  .week-nav-label{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-muted);font-weight:500}
+  .week-selector{display:flex;gap:6px;flex-wrap:wrap}
+  .week-btn{background:#FFF;border:1px solid var(--border);color:var(--text-muted);font-family:'DM Sans',sans-serif;font-size:12px;padding:7px 14px;cursor:pointer;border-radius:3px;transition:all .2s;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+  .week-btn:hover{border-color:var(--gold);color:var(--text)}
+  .week-btn.active{background:var(--gold);border-color:var(--gold);color:#FFF;font-weight:500}
+  .regions{display:grid;gap:24px}
+  .region-card{background:var(--surface);border:1px solid var(--border);border-radius:6px;overflow:hidden;transition:box-shadow .3s;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+  .region-card:hover{box-shadow:0 4px 16px rgba(184,134,11,.12)}
+  .region-header{padding:18px 24px 16px;border-bottom:2px solid var(--border2);display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,#FFFEF9,#FDF8EC)}
+  .region-dot{width:6px;height:6px;border-radius:50%;background:var(--gold);flex-shrink:0}
+  .region-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;letter-spacing:.01em}
+  .region-badge{margin-left:auto;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold-dim);background:var(--gold-faint);border:1px solid rgba(212,160,23,0.2);padding:3px 10px;border-radius:2px}
+  .region-table{width:100%;border-collapse:collapse;table-layout:fixed}
+  .region-table th{padding:10px 24px;text-align:left;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-dim);font-weight:500;border-bottom:1px solid var(--border2)}
+  .region-table th:nth-child(1){width:22%}
+  .region-table th:nth-child(2){width:54%}
+  .region-table th:nth-child(3){width:12%}
+  .region-table th:nth-child(4){width:12%}
+  .region-table td{padding:18px 24px;vertical-align:top;border-bottom:1px solid var(--border2);font-size:13.5px;overflow-wrap:break-word;color:#1A1A1A}
+  .region-table tr:last-child td{border-bottom:none}
+  .region-table tr:hover td{background:#FFFDF5}
+  .news-title{font-weight:500;color:var(--text);line-height:1.45;font-size:13.5px;display:block}
+  .news-bullets{list-style:none}
+  .news-bullets li{color:#333;line-height:1.55;font-size:13px;font-weight:400;padding:2.5px 0 2.5px 14px;position:relative}
+  .news-bullets li::before{content:'—';position:absolute;left:0;color:var(--gold-dim);font-size:11px;top:3px}
+  .src-link{color:var(--gold-dim);font-size:11px;text-decoration:none;letter-spacing:.04em;text-transform:uppercase;border-bottom:1px solid transparent;transition:all .2s;word-break:break-all;display:inline-block}
+  .src-link:hover{color:var(--gold);border-bottom-color:var(--gold)}
+  .loading-state{padding:60px 24px;text-align:center}
+  .loading-orb{width:40px;height:40px;border:2px solid var(--border2);border-top-color:var(--gold);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 20px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .loading-text{color:var(--text-muted);font-size:13px;font-weight:300}
+  .loading-sub{color:var(--text-dim);font-size:11px;margin-top:6px;letter-spacing:.04em}
+  .fetch-btn{display:flex;align-items:center;gap:10px;background:var(--gold);border:1px solid var(--gold);color:#FFF;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;padding:12px 28px;cursor:pointer;border-radius:3px;letter-spacing:.04em;transition:all .25s;margin:0 auto;box-shadow:0 2px 8px rgba(184,134,11,.25)}
+  .fetch-btn:hover{background:var(--gold-dim)}
+  .fetch-btn:disabled{opacity:.45;cursor:not-allowed}
+  .error-state{padding:40px 24px;text-align:center;color:#c97;font-size:13px;line-height:1.8}
+  .empty-prompt{padding:48px 24px;display:flex;flex-direction:column;align-items:center;gap:20px;border:1px dashed var(--border2);border-radius:4px;text-align:center}
+  .empty-prompt p{color:var(--text-muted);font-size:13.5px;font-weight:300;max-width:420px;line-height:1.65}
+  .status-bar{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text-dim);padding:10px 0;margin-bottom:4px}
+  .status-dot{width:5px;height:5px;border-radius:50%;background:#4CAF50;animation:pulse-dot 2s infinite}
+  @keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:.4}}
+  .disclaimer{font-size:11px;color:var(--text-dim);text-align:center;padding:24px 0 0;border-top:1px solid var(--border);line-height:1.7;margin-top:48px}
+  .empty-region{padding:20px 24px;color:var(--text-dim);font-size:13px;font-style:italic}
+  .pub-date{font-size:11px;color:var(--gold-dim);white-space:nowrap}
+  .hashtags{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+  .hashtag{font-size:10px;color:var(--gold);background:var(--gold-faint);border:1px solid var(--border);padding:2px 8px;border-radius:3px;font-weight:500;letter-spacing:.02em}
+  
+  .tabs{display:flex;gap:8px;margin-bottom:24px;border-bottom:2px solid var(--border2)}
+  .tab-btn{background:transparent;border:none;color:var(--text-muted);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;padding:12px 20px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s}
+  .tab-btn:hover{color:var(--text)}
+  .tab-btn.active{color:var(--gold);border-bottom-color:var(--gold)}
+  .tab-content{display:none}
+  .tab-content.active{display:block}
+  
+  .raw-table{width:100%;border-collapse:collapse;margin-top:16px}
+  .raw-table th{padding:12px 16px;text-align:left;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-dim);font-weight:500;border-bottom:1px solid var(--border2);background:var(--surface2)}
+  .raw-table td{padding:14px 16px;vertical-align:top;border-bottom:1px solid var(--border2);font-size:13px;color:#1A1A1A}
+  .raw-table tr:hover td{background:#FFFDF5}
+  .raw-table .col-title{width:30%;font-weight:500}
+  .raw-table .col-desc{width:45%}
+  .raw-table .col-source{width:12%}
+  .raw-table .col-date{width:13%}
+  .raw-desc{line-height:1.6;color:#333}
+</style>
+</head>
+<body>
+<div class="grain"></div>
+<div class="app">
+<header>
+  <div class="header-eyebrow">Intelligence Briefing</div>
+  <h1 class="header-title">Market Insight <span>Weekly</span></h1>
+  <p class="header-sub">Macro-environment analysis · Hong Kong, Greater China &amp; Global</p>
+</header>
+
+<div class="week-nav">
+  <span class="week-nav-label">Edition</span>
+  <div class="week-selector" id="weekSelector"></div>
+</div>
+
+<div id="mainContent"></div>
+
+<div class="disclaimer">
+  News sourced via NewsAPI and summarised by Google Gemini AI. All summaries are paraphrased from real articles.<br>
+  Content is for informational purposes only and does not constitute financial or investment advice.
+</div>
+</div>
+
+<script>
+const WEEKS = [
+  {label:'May 16 – May 22 2026', start:'May 16, 2026', end:'May 22, 2026', key:'2026-W21'},
+  {label:'May 9 – May 15 2026', start:'May 9, 2026', end:'May 15, 2026', key:'2026-W20'},
+  {label:'May 2 – May 8 2026', start:'May 2, 2026', end:'May 8, 2026', key:'2026-W19'},
+  {label:'Apr 25 – May 1 2026', start:'Apr 25, 2026', end:'May 1, 2026', key:'2026-W18'},
+  {label:'Apr 18–24 2026', start:'Apr 18, 2026', end:'Apr 24, 2026', key:'2026-W17'},
+  {label:'Apr 11–17 2026', start:'Apr 11, 2026', end:'Apr 17, 2026', key:'2026-W16'},
+  {label:'Apr 4–10 2026', start:'Apr 4, 2026', end:'Apr 10, 2026', key:'2026-W15'},
+  {label:'Mar 28–Apr 3 2026', start:'Mar 28, 2026', end:'Apr 3, 2026', key:'2026-W14'},
+];
+
+const REGIONS = [
+  {key:'global', label:'Global', badge:'Worldwide'},
+  {key:'hongKong', label:'Hong Kong', badge:'SAR'},
+  {key:'mainland', label:'Chinese Mainland', badge:'PRC'},
+  {key:'macau', label:'Macau', badge:'SAR'},
+  {key:'topical', label:'Topical Insights', badge:'Analysis'},
+];
+
+let currentWeek = WEEKS[0];
+let cache = {};
+let activeTab = 'summary';
+
+async function fetchWeekData(week) {
+  if (cache[week.key]) return cache[week.key];
+  const resp = await fetch('/api/briefing', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({weekStart: week.start, weekEnd: week.end})
+  });
+  if (!resp.ok) {
+    const err = await resp.json().catch(()=>({}));
+    throw new Error(err.error || `HTTP ${resp.status}`);
+  }
+  const data = await resp.json();
+  if (data.error) throw new Error(data.error);
+  cache[week.key] = data;
+  return data;
+}
+
+function switchTab(tabName) {
+  activeTab = tabName;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.getElementById('tab-btn-'+tabName).classList.add('active');
+  document.getElementById('tab-'+tabName).classList.add('active');
+}
+
+// NEW: regenerate function
+async function regenerateRegion(regionKey) {
+  const weekStart = currentWeek.start;
+  const weekEnd = currentWeek.end;
+  const resp = await fetch('/api/regenerate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ regionKey, weekStart, weekEnd })
+  });
+  const data = await resp.json();
+  if (data.error) {
+    alert(`Error: ${data.error}`);
+  } else {
+    const region = REGIONS.find(r => r.key === regionKey);
+    const newCard = renderRegion(region, data.summary);
+    const container = document.querySelector(`#${regionKey}-card`);
+    if (container) {
+      container.outerHTML = `<div id="${regionKey}-card">${newCard}</div>`;
+    }
+  }
+}
+
+function renderRegion(r, items) {
+  const body = (!items || !items.length)
+    ? `<div class="empty-region">No articles found for this region this week.</div>`
+    : `<table class="region-table">
+        <thead><tr><th>Story</th><th>Key Points</th><th>Source</th><th>Date</th></tr></thead>
+        <tbody>${items.map(item => {
+          const bullets = (item.bullets||[]).map(b=>`<li>${b}</li>`).join('');
+          let hostname = item.source || '#';
+          try { hostname = new URL(item.source).hostname.replace('www.',''); } catch {}
+          const dateStr = item.publishedAt
+            ? new Date(item.publishedAt).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})
+            : '—';
+          const hashtagsHtml = (item.hashtags && item.hashtags.length)
+            ? `<div class="hashtags">${item.hashtags.map(h=>`<span class="hashtag">${h}</span>`).join('')}</div>`
+            : '';
+          return `<tr>
+            <td><span class="news-title">${item.title||''}</span>${hashtagsHtml}</td>
+            <td><ul class="news-bullets">${bullets}</ul></td>
+            <td><a class="src-link" href="${item.source||'#'}" target="_blank" rel="noopener">${hostname}&nbsp;↗</a></td>
+            <td><span class="pub-date">${dateStr}</span></td>
+          </tr>`;
+        }).join('')}</tbody>
+      </table>`;
+  return `<div class="region-card" id="${r.key}-card">
+    <div class="region-header">
+      <div class="region-dot"></div>
+      <span class="region-title">${r.label}</span>
+      <span class="region-badge">${r.badge}</span>
+      <button class="fetch-btn" style="margin-left:auto"
+        onclick="regenerateRegion('${r.key}')">↻ Regenerate</button>
+    </div>
+    ${body}
+  </div>`;
+}
+
+
+function renderRawArticles(rawData) {
+  const allArticles = [];
+  REGIONS.forEach(r => {
+    const regionArticles = (rawData[r.key] || []).map(a => ({...a, region: r.label}));
+    allArticles.push(...regionArticles);
+  });
+  
+  if (allArticles.length === 0) {
+    return '<div class="empty-region">No raw articles available</div>';
+  }
+  
+  const rows = allArticles.map(a => {
+    const dateStr = a.publishedAt 
+      ? new Date(a.publishedAt).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})
+      : '—';
+    const desc = (a.description || '').slice(0, 200) + (a.description?.length > 200 ? '...' : '');
+    return `<tr>
+      <td class="col-title">
+        <strong>${a.title || '—'}</strong><br>
+        <small style="color:var(--gold-dim)">${a.region} · ${a.source || '—'}</small>
+      </td>
+      <td class="col-desc"><span class="raw-desc">${desc}</span></td>
+      <td class="col-source"><a class="src-link" href="${a.url||'#'}" target="_blank" rel="noopener">View ↗</a></td>
+      <td class="col-date"><span class="pub-date">${dateStr}</span></td>
+    </tr>`;
+  }).join('');
+  
+  return `<table class="raw-table">
+    <thead><tr>
+      <th class="col-title">Title & Source</th>
+      <th class="col-desc">Description</th>
+      <th class="col-source">Link</th>
+      <th class="col-date">Date</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+
+function renderData(data) {
+  const summaryCards = REGIONS.map(r => renderRegion(r, data.summaries[r.key])).join('');
+  const rawTable = renderRawArticles(data.rawArticles);
+  return `<div class="status-bar"><div class="status-dot"></div>Live intelligence · ${currentWeek.start} — ${currentWeek.end}</div>
+    <div class="tabs">
+      <button class="tab-btn active" id="tab-btn-summary" onclick="switchTab('summary')">Summary Briefing</button>
+      <button class="tab-btn" id="tab-btn-raw" onclick="switchTab('raw')">All Source Articles</button>
+    </div>
+    <div class="tab-content active" id="tab-summary">
+      <div class="regions">${summaryCards}</div>
+    </div>
+    <div class="tab-content" id="tab-raw">${rawTable}</div>`;
+}
+
+function renderLoading() {
+  return `<div class="loading-state">
+    <div class="loading-orb"></div>
+    <div class="loading-text">Fetching and summarising this week's news…</div>
+    <div class="loading-sub">NewsAPI (past 7 days) → Gemini AI · 4 regions · Est. 30–60s</div>
+  </div>`;
+}
+
+function renderEmpty() {
+  return `<div class="empty-prompt">
+    <p>Click <strong>Generate Briefing</strong> to fetch and summarise real news from the <em>past 7 days</em> across all four regions. Powered by NewsAPI + Gemini AI.</p>
+    <button class="fetch-btn" onclick="loadWeek()">⚡ Generate Briefing</button>
+  </div>`;
+}
+
+function renderError(msg) {
+  return `<div class="error-state">⚠ ${msg}<br><br>
+    <button class="fetch-btn" onclick="loadWeek()" style="margin:0 auto">Retry</button></div>`;
+}
+
+async function loadWeek() {
+  document.getElementById('mainContent').innerHTML = renderLoading();
+  try {
+    const data = await fetchWeekData(currentWeek);
+    document.getElementById('mainContent').innerHTML = renderData(data);
+  } catch(e) {
+    document.getElementById('mainContent').innerHTML = renderError(e.message);
+  }
+}
+
+function setWeek(week) {
+  currentWeek = week;
+  document.querySelectorAll('.week-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('wb-'+week.key).classList.add('active');
+
+  if (cache[week.key]) {
+    document.getElementById('mainContent').innerHTML = renderData(cache[week.key]);
+  } else {
+    document.getElementById('mainContent').innerHTML = renderEmpty();
+  }
+}
+
+function init() {
+  const sel = document.getElementById('weekSelector');
+  WEEKS.forEach(w => {
+    const btn = document.createElement('button');
+    btn.className = 'week-btn';
+    btn.id = 'wb-'+w.key;
+    btn.textContent = w.label;
+    btn.onclick = () => setWeek(w);
+    sel.appendChild(btn);
+  });
+
+  document.getElementById('wb-'+currentWeek.key).classList.add('active');
+  document.getElementById('mainContent').innerHTML = renderEmpty();
+}
+
+init();
+</script>
+</body>
+</html>
